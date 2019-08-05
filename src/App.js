@@ -1,25 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useState} from 'react';
+import {navigate} from '@reach/router'
+import logo from './astri-logo.svg';
+import Router from './router'
 import './App.css';
+import { Layout, Menu, Breadcrumb, Icon } from 'antd';
+
+const { Header, Content, Footer, Sider } = Layout;
+const { SubMenu } = Menu;
 
 function App() {
+    const [collapsed, setCollapsed] = useState(false)
+      const onCollapse = collapsed => {
+        setCollapsed(collapsed)
+      };
+    
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Layout style={{ minHeight: '100vh' }}>
+    <Sider collapsible collapsed={collapsed} onCollapse={onCollapse}>
+      <div className="side-logo" />
+      <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
+        <Menu.Item key="1" onClick={()=>navigate('/')}>
+          <Icon type="file" />
+          <span>AFS Search</span>
+        </Menu.Item>
+        <Menu.Item key="2"onClick={()=>navigate('/rnode')}>
+          <Icon type="pie-chart" />
+          <span>AFS Info</span>
+        </Menu.Item>
+        </Menu>
+    </Sider>
+    <Layout>
+      <Header style={{ background: '#fff', padding: 0 }} >
+          <img src={logo} className="App-logo" alt="logo" />
+      </Header>
+      <Content style={{ margin: '0 16px' }}>
+        <Router />
+      </Content>
+      <Footer style={{ textAlign: 'center' }}>NDN Project@ASTRI 2019 - Vayne Tian</Footer>
+    </Layout>
+  </Layout>
   );
 }
 
