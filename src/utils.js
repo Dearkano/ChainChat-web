@@ -17,3 +17,17 @@ export async function getRNodeInfo(ip){
         return null
     }
 }
+
+export async function download(afid){
+    const res = await fetch(`http://39.100.9.55:8035/download?afid=${afid}`)
+}
+
+export async function getDownloadInfo(afid){
+    const res = await fetch(`http://39.100.9.55:8035/getDownloadInfo?afid=${afid}`)
+    if(res.status ===200){
+        return await res.json()
+    }else{
+        return null
+    }
+
+}
