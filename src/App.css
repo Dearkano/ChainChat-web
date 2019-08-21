@@ -1,5 +1,5 @@
 @import '~antd/dist/antd.css';
-
+@import '~react-chat-elements/dist/main.css';
 .App {
     text-align: center;
 }
@@ -58,3 +58,9 @@
       width: 600px;
       word-break: break-all;
   }
+
+.chat-input{
+    min-width: 70%;
+    position: fixed;
+    bottom: 50px;
+}

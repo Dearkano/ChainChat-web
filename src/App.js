@@ -27,6 +27,10 @@ function App() {
           <Icon type="pie-chart" />
           <span>AFS Info</span>
         </Menu.Item>
+        <Menu.Item key="3"onClick={()=>navigate('/chatroom')}>
+          <Icon type="pie-chart" />
+          <span>ChatRoom</span>
+        </Menu.Item>
         </Menu>
     </Sider>
     <Layout>

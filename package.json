@@ -5,10 +5,15 @@
   "dependencies": {
     "@reach/router": "^1.2.1",
     "antd": "^3.20.7",
+    "identicon.js": "^2.3.3",
+    "lorem-ipsum": "^2.0.3",
     "ndn-js-sdk": "^0.18.0",
     "react": "^16.8.6",
+    "react-chat-elements": "^10.7.1",
     "react-dom": "^16.8.6",
-    "react-scripts": "3.0.1"
+    "react-scripts": "3.0.1",
+    "socket.io-client": "^2.2.0",
+    "timeago.js": "^4.0.0-beta.2"
   },
   "scripts": {
     "start": "react-scripts start",
