@@ -215,7 +215,7 @@ export default class extends Component {
       }
       // get receiver's publicKey
       const res1 = await fetch(
-        `http://${this.props.host}/getPublicKey?username=${encodeURIComponent(
+        `http://139.159.244.231/getPublicKey?username=${encodeURIComponent(
           receiver
         )}`
       );
