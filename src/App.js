@@ -18,18 +18,22 @@ function App() {
     <Layout style={{ minHeight: '100vh' }}>
     <Sider collapsible collapsed={collapsed} onCollapse={onCollapse}>
       <div className="side-logo" />
-      <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
-        <Menu.Item key="1" onClick={()=>navigate('/')}>
+      <Menu theme="dark" defaultSelectedKeys={['3']} mode="inline">
+      <Menu.Item key="3"onClick={()=>navigate('/chatroom')}>
+          <Icon type="pie-chart" />
+          <span>ChatRoom</span>
+        </Menu.Item>
+        <Menu.Item key="4"onClick={()=>navigate('/register')}>
+          <Icon type="user-add" />
+          <span>Register</span>
+        </Menu.Item>
+        <Menu.Item key="1" onClick={()=>navigate('/search')}>
           <Icon type="file" />
           <span>AFS Search</span>
         </Menu.Item>
         <Menu.Item key="2"onClick={()=>navigate('/rnode')}>
           <Icon type="pie-chart" />
           <span>AFS Info</span>
-        </Menu.Item>
-        <Menu.Item key="3"onClick={()=>navigate('/chatroom')}>
-          <Icon type="pie-chart" />
-          <span>ChatRoom</span>
         </Menu.Item>
         </Menu>
     </Sider>

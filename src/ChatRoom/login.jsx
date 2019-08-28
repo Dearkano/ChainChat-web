@@ -1,14 +1,17 @@
 import React from "react";
 import { Form, Icon, Input, Button, Checkbox } from "antd";
 import md5 from "md5";
-
+import {navigate} from '@reach/router'
+import sha256 from 'sha256'
+import bs58 from 'bs58'
+const host = 'http://183.178.144.228:8100'
 class NormalLoginForm extends React.Component {
   handleSubmit = e => {
     e.preventDefault();
     this.props.form.validateFields(async (err, values) => {
       if (!err) {
         const timestampRes = await fetch(
-          "http://139.159.244.231:8080/auth/time"
+          `${host}/auth/time`
         );
         const timestampJson = await timestampRes.json();
         const timestamp = timestampJson.CurrentTimeStamp;
@@ -20,7 +23,7 @@ class NormalLoginForm extends React.Component {
         formData.append("is_expire", 1);
         formData.append("timeStamp", timestamp);
         formData.append("signature", signature);
-        const res = await fetch("http://139.159.244.231:8080/auth/signin", {
+        const res = await fetch(`${host}/auth/signin`, {
           method: "post",
           body: formData
         });
@@ -32,19 +35,20 @@ class NormalLoginForm extends React.Component {
 
         // check if keypair exists
         const res3 = await fetch(
-          `http://139.159.244.231:8080/keypair/getall?token=${token}` 
+          `${host}/v2/keypair/getall?token=${token}` 
         );
         const data3 = await res3.json();
         const isSuccess3 = data3.SuccStatus > 0;
         if (!isSuccess3) return;
         const keyPairs = data3.KeyPairs;
         let kpAddr = "";
-        if (keyPairs.length === 0) {
+        if (!keyPairs) {
           // create keypair
           const body = new FormData();
           body.append("token", token);
+          body.append('key_type', 'rsa')
           const res1 = await fetch(
-            "http://139.159.244.231:8080/keypair/create",
+            `${host}/v2/keypair/create`,
             { method: "post", body }
           );
           const data1 = await res1.json();
@@ -56,19 +60,24 @@ class NormalLoginForm extends React.Component {
         }
 
         const res2 = await fetch(
-          `http://139.159.244.231:8080/keypair/get?token=${token}&key_pair_address=${kpAddr}`
+          `${host}/v2/keypair/get?token=${token}&key_pair_address=${kpAddr}`
         );
         const data2 = await res2.json();
         const isSuccess2 = data2.SuccStatus > 0;
         if (!isSuccess2) return;
-        const publicKey = data2.PublicKey;
-        const privateKey = data2.PrivateKey;
+        // const publicKey = data2.PublicKey;
+        // const privateKey = data2.PrivateKey;
+        const privateKey = data2.PublicKey;
+        const publicKey = data2.PrivateKey;
+        const hash = sha256.x2(publicKey)
+        const addr = bs58.encode(Buffer.from(hash, 'hex'))
         this.props.callback({
           username: values.username,
           token,
           expiredTime,
           publicKey,
-          privateKey
+          privateKey,
+          addr
         });
       }
     });
@@ -114,7 +123,7 @@ class NormalLoginForm extends React.Component {
           >
             Log in
           </Button>
-          Or <a href="">register now!</a>
+          Or <a onClick={()=>navigate('/register')}>register now!</a>
         </Form.Item>
       </Form>
     );

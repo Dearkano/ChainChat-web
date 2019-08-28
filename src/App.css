@@ -84,3 +84,8 @@
     flex-direction: column;
     overflow: auto;
 }
+
+.chat-actions{
+    display: flex;
+    width: 100%;
+}
