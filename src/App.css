@@ -62,30 +62,30 @@
 .chat-input {
 }
 
-#components-form-demo-normal-login .login-form {
+.login-form {
   max-width: 300px;
 }
-#components-form-demo-normal-login .login-form-forgot {
+.login-form-forgot {
   float: right;
 }
-#components-form-demo-normal-login .login-form-button {
+.login-form-button {
   width: 100%;
 }
 
 .chat-body {
-    max-height: 400px;
-    min-height: 400px;
-    min-width: 140px;
-    overflow: auto;
+  max-height: 400px;
+  min-height: 400px;
+  min-width: 140px;
+  overflow: auto;
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 }
 
-.chat-actions{
-    display: flex;
-    width: 100%;
+.chat-actions {
+  display: flex;
+  width: 100%;
 }

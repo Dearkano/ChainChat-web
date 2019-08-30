@@ -1,18 +1,20 @@
 import React from "react";
 import { Form, Icon, Input, Button, Checkbox } from "antd";
 import md5 from "md5";
-import {navigate} from '@reach/router'
-import sha256 from 'sha256'
-import bs58 from 'bs58'
-const host = 'http://183.178.144.228:8100'
+import { navigate } from "@reach/router";
+import sha256 from "sha256";
+import bs58 from "bs58";
+import { Subscribe } from "unstated";
+import g from "../state";
+
+const host = "http://183.178.144.228:8100";
+
 class NormalLoginForm extends React.Component {
   handleSubmit = e => {
     e.preventDefault();
     this.props.form.validateFields(async (err, values) => {
       if (!err) {
-        const timestampRes = await fetch(
-          `${host}/auth/time`
-        );
+        const timestampRes = await fetch(`${host}/auth/time`);
         const timestampJson = await timestampRes.json();
         const timestamp = timestampJson.CurrentTimeStamp;
         const signature = md5(
@@ -34,9 +36,7 @@ class NormalLoginForm extends React.Component {
         const expiredTime = data.ExpireAt;
 
         // check if keypair exists
-        const res3 = await fetch(
-          `${host}/v2/keypair/getall?token=${token}` 
-        );
+        const res3 = await fetch(`${host}/v2/keypair/getall?token=${token}`);
         const data3 = await res3.json();
         const isSuccess3 = data3.SuccStatus > 0;
         if (!isSuccess3) return;
@@ -46,11 +46,11 @@ class NormalLoginForm extends React.Component {
           // create keypair
           const body = new FormData();
           body.append("token", token);
-          body.append('key_type', 'rsa')
-          const res1 = await fetch(
-            `${host}/v2/keypair/create`,
-            { method: "post", body }
-          );
+          body.append("key_type", "rsa");
+          const res1 = await fetch(`${host}/v2/keypair/create`, {
+            method: "post",
+            body
+          });
           const data1 = await res1.json();
           const isSuccess1 = data1.SuccStatus > 0;
           if (!isSuccess1) return;
@@ -69,9 +69,9 @@ class NormalLoginForm extends React.Component {
         // const privateKey = data2.PrivateKey;
         const privateKey = data2.PublicKey;
         const publicKey = data2.PrivateKey;
-        const hash = sha256.x2(publicKey)
-        const addr = bs58.encode(Buffer.from(hash, 'hex'))
-        this.props.callback({
+        const hash = sha256.x2(publicKey);
+        const addr = bs58.encode(Buffer.from(hash, "hex"));
+        g.login({
           username: values.username,
           token,
           expiredTime,
@@ -79,6 +79,7 @@ class NormalLoginForm extends React.Component {
           privateKey,
           addr
         });
+        navigate('/friendlist')
       }
     });
   };
@@ -123,7 +124,7 @@ class NormalLoginForm extends React.Component {
           >
             Log in
           </Button>
-          Or <a onClick={()=>navigate('/register')}>register now!</a>
+          Or <a onClick={() => navigate("/register")}>register now!</a>
         </Form.Item>
       </Form>
     );

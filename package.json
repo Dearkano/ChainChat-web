@@ -5,6 +5,7 @@
   "dependencies": {
     "@reach/router": "^1.2.1",
     "antd": "^3.20.7",
+    "bs58": "^4.0.1",
     "elliptic": "^6.5.0",
     "identicon.js": "^2.3.3",
     "jsencrypt": "^3.0.0-rc.1",
@@ -12,6 +13,7 @@
     "lorem-ipsum": "^2.0.3",
     "md5": "^2.2.1",
     "ndn-js-sdk": "^0.18.0",
+    "qrcode": "^1.4.1",
     "react": "^16.8.6",
     "react-chat-elements": "^10.7.1",
     "react-dom": "^16.8.6",
@@ -20,7 +22,7 @@
     "socket.io-client": "^2.2.0",
     "styled-components": "^4.3.2",
     "timeago.js": "^4.0.0-beta.2",
-    "bs58":"^4.0.1"
+    "unstated": "^2.1.1"
   },
   "scripts": {
     "start": "react-scripts start",

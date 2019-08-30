@@ -1,19 +1,11 @@
 import React, { useState } from "react";
 import Chat from "./chat";
-import Login from "./login";
 import { Radio } from "antd";
+import { Subscribe } from "unstated";
+import g from "../state";
 export default () => {
-  const [userInfo, setUserInfo] = useState(null);
   const [cluster, setCluster] = useState(0);
   const [host, setHost] = useState("47.75.197.211:8085");
-  const callback = e => setUserInfo(e);
-  if (!userInfo) {
-    return (
-      <div id="components-form-demo-normal-login">
-        <Login callback={callback} />
-      </div>
-    );
-  }
   const onClusterChange = e => {
     setCluster(e.target.value);
     switch (e.target.value) {
@@ -29,11 +21,19 @@ export default () => {
   };
   return (
     <>
-      <Radio.Group onChange={onClusterChange} value={cluster}>
-        <Radio value={0}>ACAC</Radio>
-        <Radio value={1}>AAAF</Radio>
-      </Radio.Group>
-      <Chat userInfo={userInfo} host={host} />
+      <Subscribe to={[g]}>
+        {G => {
+          return (
+            <>
+              <Radio.Group onChange={onClusterChange} value={cluster}>
+                <Radio value={0}>ACAC</Radio>
+                <Radio value={1}>AAAF</Radio>
+              </Radio.Group>
+              <Chat userInfo={G.state.userInfo} host={host} />
+            </>
+          );
+        }}
+      </Subscribe>
     </>
   );
 };

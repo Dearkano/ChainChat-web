@@ -12,6 +12,7 @@ import io from "socket.io-client";
 
 import FaMenu from "react-icons/lib/md/more-vert";
 import InfiniteList from "../components/InfiniteList";
+import QRCode from "qrcode";
 
 const host1 = "http://183.178.144.228:8100";
 
@@ -310,29 +311,30 @@ export default class extends Component {
         });
       } else if (type === "image") {
         const res = await fetch(
-            `${host1}/file/download?token=${token}&afid=${afid}`
-          );
-        const data = await res.text()
+          `${host1}/file/download?token=${token}&afid=${afid}`
+        );
+        const data = await res.blob();
+        console.log(data);
         const base64 = await convertFile(data);
-        console.log('=-=')
-        console.log(base64)
+        console.log("=-=");
+        console.log(base64);
         list.push({
-            position: "left",
-            forwarded: true,
-            type: "photo",
-            theme: "white",
-            view: "list",
-            title: data.sender,
-            titleColor: this.getRandomColor(),
-            data:{
-                uri: base64
-            },
-            onLoad: () => {
-              console.log("Photo loaded");
-            },
-            status: "read",
-            date: +new Date()
-          });
+          position: "left",
+          forwarded: true,
+          type: "photo",
+          theme: "white",
+          view: "list",
+          title: data.sender,
+          titleColor: this.getRandomColor(),
+          data: {
+            uri: base64
+          },
+          onLoad: () => {
+            console.log("Photo loaded");
+          },
+          status: "read",
+          date: +new Date()
+        });
       }
 
       that.setState({ messageList: list }, () => {
@@ -432,6 +434,25 @@ export default class extends Component {
     });
   };
 
+  componentDidMount() {
+    const {
+      username,
+      token,
+      privateKey,
+      publicKey,
+      addr
+    } = this.props.userInfo;
+    QRCode.toCanvas(publicKey, { errorCorrectionLevel: "H" }, function(
+      err,
+      canvas
+    ) {
+      if (err) throw err;
+
+      var container = document.getElementById("qrcode");
+      container.appendChild(canvas);
+    });
+  }
+
   render() {
     var arr = [];
     var chatSource = arr.map(x => this.random("chat"));
@@ -453,6 +474,7 @@ export default class extends Component {
         <div style={{}}>
           Status: {this.state.ws ? "Connected" : "Disconnected"}
         </div>
+        <div id="qrcode"></div>
         <div className="container">
           <List
             id="chat-list"
