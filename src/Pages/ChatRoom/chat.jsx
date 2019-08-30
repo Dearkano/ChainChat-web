@@ -11,7 +11,6 @@ import {
 import io from "socket.io-client";
 
 import FaMenu from "react-icons/lib/md/more-vert";
-import InfiniteList from "../components/InfiniteList";
 import QRCode from "qrcode";
 
 const host1 = "http://183.178.144.228:8100";

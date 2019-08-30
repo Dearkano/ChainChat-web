@@ -1,11 +1,11 @@
 import React from "react";
 import { Router, Link } from "@reach/router";
-import Search from "./Search";
-import RNode from "./RNode";
-import ChatRoom from "./ChatRoom";
-import Register from "./Register";
-import FriendList from "./FriendList";
-import Login from "./Login";
+import Search from "./Pages/Search";
+import RNode from "./Pages/RNode";
+import ChatRoom from "./Pages/ChatRoom";
+import Register from "./Pages/Register";
+import FriendList from "./Pages/FriendList";
+import Login from "./Pages/Login";
 export default () => (
   <div>
     <Router>

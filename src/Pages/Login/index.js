@@ -5,7 +5,7 @@ import { navigate } from "@reach/router";
 import sha256 from "sha256";
 import bs58 from "bs58";
 import { Subscribe } from "unstated";
-import g from "../state";
+import g from "../../state";
 
 const host = "http://183.178.144.228:8100";
 
