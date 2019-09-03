@@ -89,3 +89,8 @@
   display: flex;
   width: 100%;
 }
+
+.add-friend-btn{
+    width: 100%;
+    margin-top: 20px;
+}

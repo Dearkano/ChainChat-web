@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Tabs, Spin } from "antd";
-import { getRNodeInfo } from "../utils";
+import { getRNodeInfo } from "../../utils";
 const { TabPane } = Tabs;
 
 export default () => {

@@ -11,7 +11,7 @@ import {
 import io from "socket.io-client";
 
 import FaMenu from "react-icons/lib/md/more-vert";
-import QRCode from "qrcode";
+import { navigate } from "@reach/router";
 
 const host1 = "http://183.178.144.228:8100";
 
@@ -156,7 +156,7 @@ export default class extends Component {
       "chat",
       JSON.stringify({
         sender: addr,
-        receiver: this.refs.receiver.state.value,
+        receiver: this.props.receiver,
         data: afid
       })
     );
@@ -214,7 +214,7 @@ export default class extends Component {
     if (!isSuccess) return;
     const afid = data.Afid;
     const wshost = `ws://${this.props.host}`;
-    const receiver = this.refs.receiver.state.value;
+    const receiver = this.props.receiver;
     const query = `?sender=${encodeURIComponent(
       addr
     )}&receiver=${encodeURIComponent(receiver)}`;
@@ -403,7 +403,7 @@ export default class extends Component {
       "image",
       JSON.stringify({
         sender: addr,
-        receiver: this.refs.receiver.state.value,
+        receiver: this.props.receiver,
         data: afid
       })
     );
@@ -433,23 +433,12 @@ export default class extends Component {
     });
   };
 
-  componentDidMount() {
-    const {
-      username,
-      token,
-      privateKey,
-      publicKey,
-      addr
-    } = this.props.userInfo;
-    QRCode.toCanvas(publicKey, { errorCorrectionLevel: "H" }, function(
-      err,
-      canvas
-    ) {
-      if (err) throw err;
-
-      var container = document.getElementById("qrcode");
-      container.appendChild(canvas);
-    });
+  async componentDidMount() {
+    if (!this.props.userInfo) {
+      navigate("/");
+      return
+    }
+    await this.connect();
   }
 
   render() {
@@ -458,22 +447,13 @@ export default class extends Component {
 
     return (
       <>
-        <Input ref="receiver" style={{ marginBottom: "20px" }} />
-        <Button type="primary" onClick={this.connect}>
-          Connect
-        </Button>
-        <Button
-          type="primary"
-          style={{ marginLeft: "20px" }}
-          onClick={this.disconnect}
-        >
-          Disconnect
-        </Button>
-        <div>Current Login: {this.props.userInfo.addr} </div>
+        <div>
+          Current Login: {this.props.userInfo ? this.props.userInfo.addr : ""}{" "}
+        </div>
         <div style={{}}>
           Status: {this.state.ws ? "Connected" : "Disconnected"}
         </div>
-        <div id="qrcode"></div>
+
         <div className="container">
           <List
             id="chat-list"

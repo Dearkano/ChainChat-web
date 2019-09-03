@@ -1,15 +1,24 @@
 import React from "react";
-import { Form, Icon, Input, Button, Checkbox } from "antd";
+import { Form, Icon, Input, Button, Checkbox, Radio } from "antd";
 import md5 from "md5";
 import { navigate } from "@reach/router";
 import sha256 from "sha256";
 import bs58 from "bs58";
 import { Subscribe } from "unstated";
 import g from "../../state";
+import io from "socket.io-client";
 
 const host = "http://183.178.144.228:8100";
 
 class NormalLoginForm extends React.Component {
+  state = {
+    cluster: 0,
+    host: "47.75.197.211:8085"
+  };
+  setHost = e =>
+    this.setState({
+      host: e
+    });
   handleSubmit = e => {
     e.preventDefault();
     this.props.form.validateFields(async (err, values) => {
@@ -79,9 +88,57 @@ class NormalLoginForm extends React.Component {
           privateKey,
           addr
         });
-        navigate('/friendlist')
+
+        // websocket connection
+        const body1 = new FormData();
+        body1.append("token", token);
+        // const encrypt = new JsEncrypt();
+        // encrypt.setPublicKey(this.state.receiverPublicKey);
+        // const encryptedContent = encrypt.encrypt(this.refs.input.state.value);
+        // body.append("message", encryptedContent);
+        body1.append("message", publicKey);
+        console.log(body1);
+        const res1 = await fetch(`${host}/msg/upload`, {
+          method: "post",
+          body: body1
+        });
+        const data1 = await res1.json();
+        const isSuccess1 = data1.SuccStatus > 0;
+        if (!isSuccess1) return;
+        const afid = data1.Afid;
+
+        const uri = `ws://${this.state.host}?user=${addr}`;
+        const ws = io(uri);
+        ws.on("connect", async function() {
+          console.log("on connection");
+          ws.emit(
+            "publicKey",
+            JSON.stringify({ publicKey: afid, username: addr })
+          );
+          g.setWs(ws);
+        });
+
+        g.setHost(this.state.host);
+        // build
+        navigate("/friendlist");
       }
     });
+  };
+
+  onClusterChange = e => {
+    this.setState({
+      cluster: e.target.value
+    });
+    switch (e.target.value) {
+      // ACAC
+      case 0:
+        this.setHost("47.75.197.211:8085");
+        break;
+      case 1:
+        this.setHost("139.159.244.231:8085");
+        break;
+      default:
+    }
   };
 
   render() {
@@ -90,30 +147,62 @@ class NormalLoginForm extends React.Component {
       <Form onSubmit={this.handleSubmit} className="login-form">
         <Form.Item>
           {getFieldDecorator("username", {
-            rules: [{ required: true, message: "Please input your username!" }]
+            rules: [
+              {
+                required: true,
+                message: "Please input your username!"
+              }
+            ]
           })(
             <Input
-              prefix={<Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />}
+              prefix={
+                <Icon
+                  type="user"
+                  style={{
+                    color: "rgba(0,0,0,.25)"
+                  }}
+                />
+              }
               placeholder="Username"
             />
           )}
         </Form.Item>
         <Form.Item>
           {getFieldDecorator("password", {
-            rules: [{ required: true, message: "Please input your Password!" }]
+            rules: [
+              {
+                required: true,
+                message: "Please input your Password!"
+              }
+            ]
           })(
             <Input
-              prefix={<Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />}
+              prefix={
+                <Icon
+                  type="lock"
+                  style={{
+                    color: "rgba(0,0,0,.25)"
+                  }}
+                />
+              }
               type="password"
               placeholder="Password"
             />
           )}
         </Form.Item>
         <Form.Item>
+          <Radio.Group
+            onChange={this.onClusterChange}
+            value={this.state.cluster}
+          >
+            <Radio value={0}> ACAC </Radio> <Radio value={1}> AAAF </Radio>
+          </Radio.Group>
+        </Form.Item>
+        <Form.Item>
           {getFieldDecorator("remember", {
             valuePropName: "checked",
             initialValue: true
-          })(<Checkbox>Remember me</Checkbox>)}
+          })(<Checkbox> Remember me </Checkbox>)}
           <a className="login-form-forgot" href="">
             Forgot password
           </a>
@@ -124,15 +213,15 @@ class NormalLoginForm extends React.Component {
           >
             Log in
           </Button>
-          Or <a onClick={() => navigate("/register")}>register now!</a>
+          Or <a onClick={() => navigate("/register")}> register now! </a>
         </Form.Item>
       </Form>
     );
   }
 }
 
-const WrappedNormalLoginForm = Form.create({ name: "normal_login" })(
-  NormalLoginForm
-);
+const WrappedNormalLoginForm = Form.create({
+  name: "normal_login"
+})(NormalLoginForm);
 
 export default WrappedNormalLoginForm;

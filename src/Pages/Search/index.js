@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Input, Alert, Spin, Descriptions, Button } from "antd";
-import { getFileInfo, getDownloadInfo } from "../utils";
+import { getFileInfo, getDownloadInfo } from "../../utils";
 
 const { Search } = Input;
 
