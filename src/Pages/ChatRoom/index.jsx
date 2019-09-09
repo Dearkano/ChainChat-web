@@ -14,6 +14,7 @@ export default class extends React.Component {
                   userInfo={G.state.userInfo}
                   host={G.state.host}
                   receiver={this.props.location.state.addr}
+                  remark={this.props.location.state.remark}
                 />
               </>
             );

@@ -25,7 +25,7 @@ class FriendList extends React.Component {
     this.props.form.validateFields(async (err, values) => {
       if (!err) {
         const { addr, remark } = values;
-        g.addFriend({
+        await g.addFriend({
           addr,
           remark
         });
@@ -36,14 +36,15 @@ class FriendList extends React.Component {
     });
   };
 
-  componentWillMount() {
+  async componentDidMount() {
+    console.log("in");
+    console.log(g.state);
     if (!g.state.userInfo) {
       navigate("/");
       return;
     }
-  }
-
-  componentDidMount() {
+    // get friend list
+    await g.getFriendList();
     console.log(g.state.userInfo);
     const publicKey = g.state.userInfo.publicKey;
     QRCode.toCanvas(
@@ -64,85 +65,87 @@ class FriendList extends React.Component {
 
     return (
       <>
-        <Modal
-          title="Basic Modal"
-          visible={this.state.visible}
-          onOk={this.handleOk}
-          onCancel={this.handleCancel}
-        >
-          <Form className="login-form">
-            <Form.Item>
-              {getFieldDecorator("addr", {
-                rules: [
-                  {
-                    required: true,
-                    message: "Please input the address!"
-                  }
-                ]
-              })(
-                <Input
-                  prefix={
-                    <Icon
-                      type="address"
-                      style={{
-                        color: "rgba(0,0,0,.25)"
-                      }}
-                    />
-                  }
-                  placeholder="Address"
-                />
-              )}
-            </Form.Item>
-            <Form.Item>
-              {getFieldDecorator("remark", {
-                rules: [
-                  {
-                    required: true,
-                    message: "Please input the remark!"
-                  }
-                ]
-              })(
-                <Input
-                  prefix={
-                    <Icon
-                      type="user"
-                      style={{
-                        color: "rgba(0,0,0,.25)"
-                      }}
-                    />
-                  }
-                  placeholder="Remark"
-                />
-              )}
-            </Form.Item>
-          </Form>
-        </Modal>
-        <div>
-          Current Login: {g.state.userInfo ? g.state.userInfo.addr : ""}
-        </div>
-        <Button
-          onClick={this.showModal}
-          className="add-friend-btn"
-          icon="plus-circle"
-          type="primary"
-        >
-          Add Friend
-        </Button>
         <Provider>
+          <Modal
+            title="Add Friend"
+            visible={this.state.visible}
+            onOk={this.handleOk}
+            onCancel={this.handleCancel}
+          >
+            <Form className="login-form">
+              <Form.Item>
+                {getFieldDecorator("addr", {
+                  rules: [
+                    {
+                      required: true,
+                      message: "Please input the address!"
+                    }
+                  ]
+                })(
+                  <Input
+                    prefix={
+                      <Icon
+                        type="address"
+                        style={{
+                          color: "rgba(0,0,0,.25)"
+                        }}
+                      />
+                    }
+                    placeholder="Address"
+                  />
+                )}
+              </Form.Item>
+              <Form.Item>
+                {getFieldDecorator("remark", {
+                  rules: [
+                    {
+                      required: true,
+                      message: "Please input the remark!"
+                    }
+                  ]
+                })(
+                  <Input
+                    prefix={
+                      <Icon
+                        type="user"
+                        style={{
+                          color: "rgba(0,0,0,.25)"
+                        }}
+                      />
+                    }
+                    placeholder="Remark"
+                  />
+                )}
+              </Form.Item>
+            </Form>
+          </Modal>
+          <div>
+            Current Login: {g.state.userInfo ? g.state.userInfo.addr : ""}
+          </div>
+          <Button
+            onClick={this.showModal}
+            className="add-friend-btn"
+            icon="plus-circle"
+            type="primary"
+          >
+            Add Friend
+          </Button>
           <Subscribe to={[g]}>
             {G => {
-              console.log(G.state.friendList);
-              const fl = [].concat(G.state.friendList);
+              console.log(G.state.messageList);
+              const fl = [].concat(G.state.messageList);
               fl.forEach(item => {
                 item.avatar = "https://placeimg.com/140/140/any";
                 item.alt = "Reactjs";
                 item.title = item.remark;
                 item.date = new Date();
-                item.unread = 0;
+                item.unread = item.messages.filter(
+                  item => item.status === "pending"
+                ).length;
               });
               return (
                 <ChatList
-                  key={G.state.friendList.length}
+                  key={G.state.messageList.length}
                   className="chat-list"
                   onClick={item => {
                     console.log(item);
@@ -158,8 +161,9 @@ class FriendList extends React.Component {
               );
             }}
           </Subscribe>
+
+          <div id="qrcode"> </div>
         </Provider>
-        <div id="qrcode"> </div>
       </>
     );
   }

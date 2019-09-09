@@ -13,7 +13,7 @@ const host = "http://183.178.144.228:8100";
 class NormalLoginForm extends React.Component {
   state = {
     cluster: 0,
-    host: "47.75.197.211:8085"
+    host: "47.75.197.211:8079"
   };
   setHost = e =>
     this.setState({
@@ -74,20 +74,12 @@ class NormalLoginForm extends React.Component {
         const data2 = await res2.json();
         const isSuccess2 = data2.SuccStatus > 0;
         if (!isSuccess2) return;
-        // const publicKey = data2.PublicKey;
-        // const privateKey = data2.PrivateKey;
-        const privateKey = data2.PublicKey;
-        const publicKey = data2.PrivateKey;
+        const publicKey = data2.PublicKey;
+        const privateKey = data2.PrivateKey;
+        // const privateKey = data2.PublicKey;
+        // const publicKey = data2.PrivateKey;
         const hash = sha256.x2(publicKey);
         const addr = bs58.encode(Buffer.from(hash, "hex"));
-        g.login({
-          username: values.username,
-          token,
-          expiredTime,
-          publicKey,
-          privateKey,
-          addr
-        });
 
         // websocket connection
         const body1 = new FormData();
@@ -107,6 +99,15 @@ class NormalLoginForm extends React.Component {
         if (!isSuccess1) return;
         const afid = data1.Afid;
 
+        g.login({
+            username: values.username,
+            token,
+            expiredTime,
+            publicKey,
+            privateKey,
+            addr,
+            publicKeyAfid: afid
+          });
         const uri = `ws://${this.state.host}?user=${addr}`;
         const ws = io(uri);
         ws.on("connect", async function() {
@@ -117,6 +118,11 @@ class NormalLoginForm extends React.Component {
           );
           g.setWs(ws);
         });
+
+        ws.on("newMes", async str=>{
+            const obj = JSON.parse(str)
+           // g.addFriend(obj.sender)
+        })
 
         g.setHost(this.state.host);
         // build
@@ -132,10 +138,10 @@ class NormalLoginForm extends React.Component {
     switch (e.target.value) {
       // ACAC
       case 0:
-        this.setHost("47.75.197.211:8085");
+        this.setHost("47.75.197.211:8079");
         break;
       case 1:
-        this.setHost("139.159.244.231:8085");
+        this.setHost("47.75.197.211:8081");
         break;
       default:
     }

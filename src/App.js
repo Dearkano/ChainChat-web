@@ -7,8 +7,6 @@ import { Layout, Menu, Breadcrumb, Icon } from "antd";
 import { Provider, Subscribe, Container } from "unstated";
 import g from "./state";
 
-
-
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
@@ -61,8 +59,8 @@ function App() {
                     <Menu.Item
                       key="3"
                       onClick={() => {
-                        navigate("/chatroom");
-                        G.setKeys("3");
+                        g.logout();
+                        navigate("/login");
                       }}
                     >
                       <Icon type="logout" />

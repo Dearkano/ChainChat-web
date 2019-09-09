@@ -9,7 +9,6 @@ class Register extends React.Component {
   state = {
     email: "",
     defaultPassword: "",
-    confirmDirty: false,
     step: 0
   };
 

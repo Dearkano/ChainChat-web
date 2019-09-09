@@ -73,8 +73,7 @@
 }
 
 .chat-body {
-  max-height: 400px;
-  min-height: 400px;
+  height: 70vh;
   min-width: 140px;
   overflow: auto;
 }
