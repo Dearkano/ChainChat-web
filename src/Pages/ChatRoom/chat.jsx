@@ -13,9 +13,10 @@ import io from "socket.io-client";
 import FaMenu from "react-icons/lib/md/more-vert";
 import { navigate } from "@reach/router";
 import { Generate_key } from "../../utils";
-import CryptoJS from "crypto-js";
+import g from "../../state";
+const CryptoJS = require("crypto-js");
 
-const host1 = "http://183.178.144.228:8100";
+const host1 = "http://10.6.71.79:8080";
 
 const convertFile = async file => {
   return new Promise((resolve, reject) => {
@@ -35,13 +36,15 @@ export default class extends Component {
       cluster: 0,
       ws: null,
       receiverPublicKey: "",
-      AESKEY: ""
+      AESKEY: "",
+      encryptedAESKEY: ""
     };
   }
 
-  componentWillUnmount() {
+  async componentWillUnmount() {
     // setInterval(this.addMessage.bind(this), 3000);
     if (this.state.ws) this.state.ws.close();
+    await g.getFriendList();
   }
 
   getRandomColor() {
@@ -143,8 +146,15 @@ export default class extends Component {
     console.log(this.props.userInfo);
     const body = new FormData();
     body.append("token", token);
-    const cipher = CryptoJS.AES.encrypt(this.refs.input.state.value, this.state.AESKEY);
-    body.append("message", cipher);
+    const cipher = CryptoJS.AES.encrypt(
+      this.refs.input.state.value,
+      this.state.AESKEY
+    ).toString();
+    const content = JSON.stringify({
+      ph: this.state.encryptedAESKEY,
+      cipher
+    });
+    body.append("message", content);
     // body.append("message", this.refs.input.state.value);
     const res = await fetch(`${host1}/msg/upload`, {
       method: "post",
@@ -210,7 +220,7 @@ export default class extends Component {
     const that = this;
     ws.on("connect", async function() {
       console.log("on connection");
-      that.setState({ws})
+      that.setState({ ws });
     });
     ws.on("historytest", str => console.log("history test" + str));
     ws.on("history", async str => {
@@ -219,30 +229,70 @@ export default class extends Component {
       console.log(data);
       const list = that.state.messageList;
       for (const item of data) {
-        const res = await fetch(
-          `${host1}/msg/download?token=${token}&afid=${item.afid}`
-        );
-        const d = await res.json();
-        const mes = CryptoJS.AES.decrypt(d.Message, that.state.AESKEY);
-        list.push({
-          position: item.sender === addr ? "right" : "left",
-          forwarded: true,
-          type: "text",
-          theme: "white",
-          view: "list",
-          title: item.sender,
-          titleColor: this.getRandomColor(),
-          text: mes,
-          onLoad: () => {
-            console.log("Photo loaded");
-          },
-          status: "read",
-          date: +new Date()
-        });
-        this.setState({
-          ws,
-          messageList: list
-        });
+        if (item.type === "afid") {
+          const res = await fetch(
+            `${host1}/msg/download?token=${token}&afid=${item.afid}`
+          );
+          const d = await res.json();
+          const obj = JSON.parse(d.Message);
+          let encrypt = new JsEncrypt();
+          encrypt.setPrivateKey(privateKey);
+          const ph = encrypt.decrypt(obj.ph) || this.state.AESKEY;
+          const mes = CryptoJS.AES.decrypt(obj.cipher, ph).toString(
+            CryptoJS.enc.Utf8
+          );
+          list.push({
+            position: item.sender === addr ? "right" : "left",
+            forwarded: true,
+            type: "text",
+            theme: "white",
+            view: "list",
+            title: item.sender,
+            titleColor: this.getRandomColor(),
+            text: mes,
+            onLoad: () => {
+              console.log("Photo loaded");
+            },
+            status: "read",
+            date: item.timestamp
+          });
+          this.setState({
+            ws,
+            messageList: list
+          });
+        } else if (item.type === "image") {
+            const res = await fetch(
+                `${host1}/file/download?token=${token}&afid=${item.afid}`
+              );
+              const data = await res.blob();
+              console.log(data);
+              const base64 = await convertFile(data);
+              console.log("=-=");
+              console.log(base64);
+              list.push({
+                position: item.sender===addr? "right":"left",
+                forwarded: true,
+                type: "photo",
+                theme: "white",
+                view: "list",
+                title: data.sender,
+                titleColor: this.getRandomColor(),
+                data: {
+                  uri: base64,
+                  width: 300,
+                  height: 300
+                },
+                onLoad: () => {
+                  console.log("Photo loaded");
+                },
+                status: "read",
+                date: item.timestamp
+              });
+              this.setState({
+                ws,
+                messageList: list
+              });
+        }
       }
     });
 
@@ -260,7 +310,14 @@ export default class extends Component {
         const d = await res.json();
         const isSuccess = d.SuccStatus > 0;
         if (!isSuccess) return;
-        const mes = CryptoJS.AES.decrypt(d.Message, that.state.AESKEY);
+        const obj = JSON.parse(d.Message);
+        console.log(obj);
+        let encrypt = new JsEncrypt();
+        encrypt.setPrivateKey(privateKey);
+        const ph = encrypt.decrypt(obj.ph);
+        const mes = CryptoJS.AES.decrypt(obj.cipher, ph).toString(
+          CryptoJS.enc.Utf8
+        );
         list.push({
           position: "left",
           forwarded: true,
@@ -436,21 +493,18 @@ export default class extends Component {
     const receiverPublicKey = d.Message;
     // ws.emit("publicKey", JSON.stringify({ publicKey: publicKeyAfid, username: addr }));
     let AESKEY = "";
-    // find if aes key stored
-    const tag1 = `${addr}-${receiver}`;
-    const tag2 = `${receiver}-${addr}`;
+    const tag = `${addr}-${receiver}`;
     let res = await fetch(
-      `${host1}/afid/getbytag?token=${token}&tag=ChainChat::AESKEY-${tag1}}`
+      `${host1}/afid/getbytag?token=${token}&tag=ChainChat::AESKEY-${tag}`
     );
     let data = await res.json();
-    if (data.SuccStatus <= 0) return;
+    // if (data.SuccStatus <= 0) return;
     // if the AES Key not exists
     if (!data.Afids || data.Afids.length === 0) {
       AESKEY = Generate_key();
-
-      let encrypt = new JsEncrypt();
-      encrypt.setPublicKey(receiverPublicKey);
-      let encryptedContent = encrypt.encrypt(AESKEY);
+      const encrypt = new JsEncrypt();
+      encrypt.setPublicKey(publicKey);
+      const encryptedContent = encrypt.encrypt(AESKEY);
       let body = new FormData();
       body.append("token", token);
       body.append("message", encryptedContent);
@@ -460,7 +514,7 @@ export default class extends Component {
       });
       data = await res.json();
       if (data.SuccStatus <= 0) return;
-      let AESKEYAfid = data.Afid;
+      const AESKEYAfid = data.Afid;
       body = new FormData();
       body.append("token", token);
       body.append("afid", AESKEYAfid);
@@ -473,41 +527,7 @@ export default class extends Component {
       // add tag
       body = new FormData();
       body.append("token", token);
-      body.append("tag", `ChainChat::${tag2}`);
-      body.append("afid", AESKEYAfid);
-      res = await fetch(`${host1}/afid/addtag`, {
-        method: "post",
-        body
-      });
-      data = await res.json();
-      if (data.SuccStatus <= 0) return;
-
-      encrypt = new JsEncrypt();
-      encrypt.setPublicKey(addr);
-      encryptedContent = encrypt.encrypt(AESKEY);
-      body = new FormData();
-      body.append("token", token);
-      body.append("message", encryptedContent);
-      res = await fetch(`${host1}/msg/upload`, {
-        method: "post",
-        body
-      });
-      data = await res.json();
-      if (data.SuccStatus <= 0) return;
-      AESKEYAfid = data.Afid;
-      body = new FormData();
-      body.append("token", token);
-      body.append("afid", AESKEYAfid);
-      res = await fetch(`${host1}/afid/add`, {
-        method: "post",
-        body
-      });
-      data = await res.json();
-      if (data.SuccStatus <= 0) return;
-      // add tag
-      body = new FormData();
-      body.append("token", token);
-      body.append("tag", `ChainChat::${tag1}`);
+      body.append("tag", `ChainChat::AESKEY-${tag}`);
       body.append("afid", AESKEYAfid);
       res = await fetch(`${host1}/afid/addtag`, {
         method: "post",
@@ -523,10 +543,15 @@ export default class extends Component {
       let encrypt = new JsEncrypt();
       encrypt.setPrivateKey(privateKey);
       AESKEY = encrypt.decrypt(data.Message);
-      console.log("decrypted");
+      console.log("--");
+      console.log(privateKey);
       console.log(AESKEY);
     }
-    this.setState({ receiverPublicKey, AESKEY });
+
+    const encrypt = new JsEncrypt();
+    encrypt.setPublicKey(receiverPublicKey);
+    const encryptedAESKEY = encrypt.encrypt(AESKEY);
+    this.setState({ receiverPublicKey, AESKEY, encryptedAESKEY });
     await this.connect();
   }
 

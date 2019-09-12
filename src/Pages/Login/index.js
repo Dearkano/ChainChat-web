@@ -8,7 +8,7 @@ import { Subscribe } from "unstated";
 import g from "../../state";
 import io from "socket.io-client";
 
-const host = "http://183.178.144.228:8100";
+const host = "http://10.6.71.79:8080";
 
 class NormalLoginForm extends React.Component {
   state = {
@@ -100,29 +100,32 @@ class NormalLoginForm extends React.Component {
         const afid = data1.Afid;
 
         g.login({
-            username: values.username,
-            token,
-            expiredTime,
-            publicKey,
-            privateKey,
-            addr,
-            publicKeyAfid: afid
-          });
+          username: values.username,
+          token,
+          expiredTime,
+          publicKey,
+          privateKey,
+          addr,
+          publicKeyAfid: afid
+        });
         const uri = `ws://${this.state.host}?user=${addr}`;
         const ws = io(uri);
         ws.on("connect", async function() {
           console.log("on connection");
           ws.emit(
             "publicKey",
-            JSON.stringify({ publicKey: afid, username: addr })
+            JSON.stringify({
+              publicKey: afid,
+              username: addr
+            })
           );
           g.setWs(ws);
         });
 
-        ws.on("newMes", async str=>{
-            const obj = JSON.parse(str)
-           // g.addFriend(obj.sender)
-        })
+        ws.on("newMes", async str => {
+          const obj = JSON.parse(str);
+          await g.getFriendList();
+        });
 
         g.setHost(this.state.host);
         // build
@@ -143,6 +146,15 @@ class NormalLoginForm extends React.Component {
       case 1:
         this.setHost("47.75.197.211:8081");
         break;
+      case 2:
+        this.setHost("47.52.206.176:8008");
+        break;
+      case 3:
+        this.setHost("47.52.172.63:8008");
+        break;
+      case 4:
+        this.setHost("47.75.197.211:8008");
+        break;
       default:
     }
   };
@@ -152,6 +164,7 @@ class NormalLoginForm extends React.Component {
     return (
       <Form onSubmit={this.handleSubmit} className="login-form">
         <Form.Item>
+          {" "}
           {getFieldDecorator("username", {
             rules: [
               {
@@ -171,9 +184,10 @@ class NormalLoginForm extends React.Component {
               }
               placeholder="Username"
             />
-          )}
-        </Form.Item>
+          )}{" "}
+        </Form.Item>{" "}
         <Form.Item>
+          {" "}
           {getFieldDecorator("password", {
             rules: [
               {
@@ -194,24 +208,29 @@ class NormalLoginForm extends React.Component {
               type="password"
               placeholder="Password"
             />
-          )}
-        </Form.Item>
+          )}{" "}
+        </Form.Item>{" "}
         <Form.Item>
           <Radio.Group
             onChange={this.onClusterChange}
             value={this.state.cluster}
           >
-            <Radio value={0}> ACAC </Radio> <Radio value={1}> AAAF </Radio>
-          </Radio.Group>
-        </Form.Item>
+            <Radio value={0}> 9242 </Radio> <Radio value={1}> 9243 </Radio>
+            <Radio value={3}> 9219 </Radio>
+            <Radio value={2}> 9220 </Radio>
+            <Radio value={4}> 9221 </Radio>
+     
+          </Radio.Group>{" "}
+        </Form.Item>{" "}
         <Form.Item>
+          {" "}
           {getFieldDecorator("remember", {
             valuePropName: "checked",
             initialValue: true
-          })(<Checkbox> Remember me </Checkbox>)}
+          })(<Checkbox> Remember me </Checkbox>)}{" "}
           <a className="login-form-forgot" href="">
-            Forgot password
-          </a>
+            Forgot password{" "}
+          </a>{" "}
           <Button
             type="primary"
             htmlType="submit"
@@ -219,8 +238,8 @@ class NormalLoginForm extends React.Component {
           >
             Log in
           </Button>
-          Or <a onClick={() => navigate("/register")}> register now! </a>
-        </Form.Item>
+          Or <a onClick={() => navigate("/register")}> register now! </a>{" "}
+        </Form.Item>{" "}
       </Form>
     );
   }

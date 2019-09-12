@@ -12,7 +12,7 @@ class GlobalState extends Container {
         messageList: [],
         ws: null,
         host: '',
-        afsHost: 'http://183.178.144.228:8100',
+        afsHost: 'http://10.6.71.79:8080',
     }
 
     login = userInfo => this.setState({
@@ -30,7 +30,7 @@ class GlobalState extends Container {
             userInfo,
             host
         } = this.state
-
+        if (!userInfo) return
         // get message from message node
         const mRes = await fetch(`http://${host}/getMessageList?addr=${userInfo.addr}`)
         const mData = await mRes.json()
@@ -40,8 +40,8 @@ class GlobalState extends Container {
         if (data.SuccStatus <= 0) return
         let newFriendList = []
         if (!data.Afids || data.Afids.length === 0) {
-            
-        }else{
+
+        } else {
             const afid = data.Afids[0].Afid
             res = await fetch(`${afsHost}/msg/download?afid=${afid}&token=${userInfo.token}`)
             data = await res.json()
@@ -50,24 +50,37 @@ class GlobalState extends Container {
         }
 
         const set = new Set()
-        for(const item of newFriendList){
+        for (const item of newFriendList) {
             set.add(item.addr)
         }
-        for(const item of mData){
-            if(!set.has(item.sender)){
+        for (const item of mData) {
+            if (!set.has(item.sender)) {
                 set.add(item.sender)
-                newFriendList = newFriendList.concat({addr:item.sender, remark: 'stranger'})
+                newFriendList = newFriendList.concat({
+                    addr: item.sender,
+                    remark: 'stranger'
+                })
             }
         }
 
         const newMessageList = []
         for (const item of newFriendList) {
             const mes = mData.filter(m => m.addr = item.addr)
-            const obj = {
-                ...item,
-                messages: mes
+            if (mes.length > 0) {
+                const obj = {
+                    ...item,
+                    messages: mes[0].messages
+                }
+                console.log(obj)
+                newMessageList.push(obj)
+            }else{
+                const obj = {
+                    ...item,
+                    messages: []
+                }
+                console.log(obj)
+                newMessageList.push(obj)
             }
-            newMessageList.push(obj)
         }
         this.setState({
             friendList: newFriendList,

@@ -8,7 +8,8 @@ import QRCode from "qrcode";
 
 class FriendList extends React.Component {
   state = {
-    visible: false
+    visible: false,
+    qrCodeVisible: false
   };
   showModal = () => {
     this.setState({
@@ -19,6 +20,12 @@ class FriendList extends React.Component {
     console.log(e);
     this.setState({
       visible: false
+    });
+  };
+  handleQrCodeCancel = e => {
+    console.log(e);
+    this.setState({
+      qrCodeVisible: false
     });
   };
   handleOk = e => {
@@ -46,20 +53,26 @@ class FriendList extends React.Component {
     // get friend list
     await g.getFriendList();
     console.log(g.state.userInfo);
-    const publicKey = g.state.userInfo.publicKey;
-    QRCode.toCanvas(
-      publicKey,
-      {
-        errorCorrectionLevel: "H"
-      },
-      function(err, canvas) {
-        if (err) throw err;
-
-        var container = document.getElementById("qrcode");
-        container.appendChild(canvas);
-      }
-    );
   }
+  showQrCode = () => {
+    this.setState({ qrCodeVisible: true }, () => {
+      const publicKey = g.state.userInfo.publicKey;
+      QRCode.toCanvas(
+        publicKey,
+        {
+          errorCorrectionLevel: "H"
+        },
+        function(err, canvas) {
+          if (err) throw err;
+
+          var container = document.getElementById("qrcode");
+          console.log(container.childNodes)
+          if(container.childNodes.length===1)
+          container.appendChild(canvas);
+        }
+      );
+    });
+  };
   render() {
     const { getFieldDecorator } = this.props.form;
 
@@ -130,18 +143,27 @@ class FriendList extends React.Component {
           >
             Add Friend
           </Button>
+          <Button
+            onClick={this.showQrCode}
+            className="add-friend-btn"
+            icon="qrcode"
+            type="primary"
+          >
+            My QrCode
+          </Button>
           <Subscribe to={[g]}>
             {G => {
               console.log(G.state.messageList);
               const fl = [].concat(G.state.messageList);
               fl.forEach(item => {
+                const pendingList = item.messages.filter(
+                  item => item.status === "pending"
+                );
                 item.avatar = "https://placeimg.com/140/140/any";
                 item.alt = "Reactjs";
                 item.title = item.remark;
-                item.date = new Date();
-                item.unread = item.messages.filter(
-                  item => item.status === "pending"
-                ).length;
+                item.date = item.messages.length===0?Date.now():item.messages[item.messages.length - 1].timestamp;
+                item.unread = pendingList.length;
               });
               return (
                 <ChatList
@@ -161,8 +183,14 @@ class FriendList extends React.Component {
               );
             }}
           </Subscribe>
-
-          <div id="qrcode"> </div>
+          <Modal
+            title="My QrCode"
+            visible={this.state.qrCodeVisible}
+            onOk={this.handleQrCodeCancel}
+            onCancel={this.handleQrCodeCancel}
+          >
+            <div id="qrcode"> </div>
+          </Modal>
         </Provider>
       </>
     );
