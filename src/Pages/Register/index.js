@@ -3,7 +3,8 @@ import { navigate } from "@reach/router";
 import React from "react";
 import { Form, Icon, Input, Button, Checkbox } from "antd";
 import md5 from "md5";
-const host = "http://10.6.71.79:8080";
+const config = require('../../config')
+const host = config.bos;
 
 class Register extends React.Component {
   state = {

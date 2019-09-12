@@ -14,9 +14,10 @@ import FaMenu from "react-icons/lib/md/more-vert";
 import { navigate } from "@reach/router";
 import { Generate_key } from "../../utils";
 import g from "../../state";
+const config = require('../../config.json')
 const CryptoJS = require("crypto-js");
 
-const host1 = "http://10.6.71.79:8080";
+const host1 = config.bos;
 
 const convertFile = async file => {
   return new Promise((resolve, reject) => {

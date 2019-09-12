@@ -7,8 +7,8 @@ import bs58 from "bs58";
 import { Subscribe } from "unstated";
 import g from "../../state";
 import io from "socket.io-client";
-
-const host = "http://10.6.71.79:8080";
+const config = require('../../config.json')
+const host = config.bos;
 
 class NormalLoginForm extends React.Component {
   state = {
