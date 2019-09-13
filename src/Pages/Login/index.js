@@ -213,8 +213,8 @@ class NormalLoginForm extends React.Component {
             onChange={this.onClusterChange}
             value={this.state.cluster}
           >
-            <Radio value={0}> 9242 </Radio> <Radio value={1}> 9243 </Radio>
-            <Radio value={2}> 9219 </Radio>
+            {/* <Radio value={0}> 9242 </Radio> <Radio value={1}> 9243 </Radio>
+            <Radio value={2}> 9219 </Radio> */}
             <Radio value={3}> 9220 </Radio>
             <Radio value={4}> 9221 </Radio>
      

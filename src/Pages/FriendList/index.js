@@ -60,7 +60,8 @@ class FriendList extends React.Component {
       QRCode.toCanvas(
         publicKey,
         {
-          errorCorrectionLevel: "H"
+          errorCorrectionLevel: "M",
+          width: 220
         },
         function(err, canvas) {
           if (err) throw err;
@@ -189,7 +190,7 @@ class FriendList extends React.Component {
             onOk={this.handleQrCodeCancel}
             onCancel={this.handleQrCodeCancel}
           >
-            <div id="qrcode"> </div>
+            <div id="qrcode" style={{width:'220px', height:'220px'}}> </div>
           </Modal>
         </Provider>
       </>
