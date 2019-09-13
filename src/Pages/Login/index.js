@@ -11,7 +11,7 @@ import io from "socket.io-client";
 class NormalLoginForm extends React.Component {
   state = {
     cluster: 3,
-    host: "47.52.172.63:8008"
+    host: "47.52.206.176:8008"
   };
   setHost = e =>
     this.setState({
@@ -145,10 +145,10 @@ class NormalLoginForm extends React.Component {
     //     this.setHost("47.75.197.211:8081");
     //     break;
     //   case 2:
-    //     this.setHost("47.52.206.176:8008");
+    //     this.setHost("47.52.172.63:8008");
     //     break;
       case 3:
-        this.setHost("47.52.172.63:8008");
+        this.setHost("47.52.206.176:8008");
         break;
       case 4:
         this.setHost("47.75.197.211:8008");
@@ -214,8 +214,8 @@ class NormalLoginForm extends React.Component {
             value={this.state.cluster}
           >
             <Radio value={0}> 9242 </Radio> <Radio value={1}> 9243 </Radio>
-            <Radio value={3}> 9219 </Radio>
-            <Radio value={2}> 9220 </Radio>
+            <Radio value={2}> 9219 </Radio>
+            <Radio value={3}> 9220 </Radio>
             <Radio value={4}> 9221 </Radio>
      
           </Radio.Group>{" "}
