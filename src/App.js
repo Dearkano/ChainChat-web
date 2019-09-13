@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { navigate } from "@reach/router";
 import logo from "./astri-logo.svg";
 import Router from "./router";
@@ -12,6 +12,18 @@ const { SubMenu } = Menu;
 
 function App() {
   const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const getHost = async () => {
+      const res = await fetch("/config.json");
+      const data = await res.json();
+      const bos = data.bos;
+      g.setState({ afsHost: bos });
+    };
+    (async () => {
+      await getHost();
+    })();
+  }, []);
   const onCollapse = collapsed => {
     setCollapsed(collapsed);
   };

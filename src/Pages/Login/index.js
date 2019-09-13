@@ -7,13 +7,11 @@ import bs58 from "bs58";
 import { Subscribe } from "unstated";
 import g from "../../state";
 import io from "socket.io-client";
-const config = require('../../config.json')
-const host = config.bos;
 
 class NormalLoginForm extends React.Component {
   state = {
-    cluster: 0,
-    host: "47.75.197.211:8079"
+    cluster: 3,
+    host: "47.52.172.63:8008"
   };
   setHost = e =>
     this.setState({
@@ -23,7 +21,7 @@ class NormalLoginForm extends React.Component {
     e.preventDefault();
     this.props.form.validateFields(async (err, values) => {
       if (!err) {
-        const timestampRes = await fetch(`${host}/auth/time`);
+        const timestampRes = await fetch(`${g.state.afsHost}/auth/time`);
         const timestampJson = await timestampRes.json();
         const timestamp = timestampJson.CurrentTimeStamp;
         const signature = md5(
@@ -34,7 +32,7 @@ class NormalLoginForm extends React.Component {
         formData.append("is_expire", 1);
         formData.append("timeStamp", timestamp);
         formData.append("signature", signature);
-        const res = await fetch(`${host}/auth/signin`, {
+        const res = await fetch(`${g.state.afsHost}/auth/signin`, {
           method: "post",
           body: formData
         });
@@ -45,7 +43,7 @@ class NormalLoginForm extends React.Component {
         const expiredTime = data.ExpireAt;
 
         // check if keypair exists
-        const res3 = await fetch(`${host}/v2/keypair/getall?token=${token}`);
+        const res3 = await fetch(`${g.state.afsHost}/v2/keypair/getall?token=${token}`);
         const data3 = await res3.json();
         const isSuccess3 = data3.SuccStatus > 0;
         if (!isSuccess3) return;
@@ -56,7 +54,7 @@ class NormalLoginForm extends React.Component {
           const body = new FormData();
           body.append("token", token);
           body.append("key_type", "rsa");
-          const res1 = await fetch(`${host}/v2/keypair/create`, {
+          const res1 = await fetch(`${g.state.afsHost}/v2/keypair/create`, {
             method: "post",
             body
           });
@@ -69,7 +67,7 @@ class NormalLoginForm extends React.Component {
         }
 
         const res2 = await fetch(
-          `${host}/v2/keypair/get?token=${token}&key_pair_address=${kpAddr}`
+          `${g.state.afsHost}/v2/keypair/get?token=${token}&key_pair_address=${kpAddr}`
         );
         const data2 = await res2.json();
         const isSuccess2 = data2.SuccStatus > 0;
@@ -90,7 +88,7 @@ class NormalLoginForm extends React.Component {
         // body.append("message", encryptedContent);
         body1.append("message", publicKey);
         console.log(body1);
-        const res1 = await fetch(`${host}/msg/upload`, {
+        const res1 = await fetch(`${g.state.afsHost}/msg/upload`, {
           method: "post",
           body: body1
         });
@@ -140,15 +138,15 @@ class NormalLoginForm extends React.Component {
     });
     switch (e.target.value) {
       // ACAC
-      case 0:
-        this.setHost("47.75.197.211:8079");
-        break;
-      case 1:
-        this.setHost("47.75.197.211:8081");
-        break;
-      case 2:
-        this.setHost("47.52.206.176:8008");
-        break;
+    //   case 0:
+    //     this.setHost("47.75.197.211:8079");
+    //     break;
+    //   case 1:
+    //     this.setHost("47.75.197.211:8081");
+    //     break;
+    //   case 2:
+    //     this.setHost("47.52.206.176:8008");
+    //     break;
       case 3:
         this.setHost("47.52.172.63:8008");
         break;

@@ -4,7 +4,6 @@ import {
     Container
 } from 'unstated'
 import _ from 'lodash'
-const config = require('./config.json')
 class GlobalState extends Container {
     state = {
         userInfo: null,
@@ -13,7 +12,7 @@ class GlobalState extends Container {
         messageList: [],
         ws: null,
         host: '',
-        afsHost: config.bos,
+        afsHost: '',
     }
 
     login = userInfo => this.setState({

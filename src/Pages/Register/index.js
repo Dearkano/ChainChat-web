@@ -3,9 +3,7 @@ import { navigate } from "@reach/router";
 import React from "react";
 import { Form, Icon, Input, Button, Checkbox } from "antd";
 import md5 from "md5";
-const config = require('../../config')
-const host = config.bos;
-
+import g from '../../state'
 class Register extends React.Component {
   state = {
     email: "",
@@ -20,7 +18,7 @@ class Register extends React.Component {
         const body = new FormData();
         body.append("email", values.email);
         body.append("invitation_code", values.invitationCode);
-        const res = await fetch(`${host}/auth/signup`, {
+        const res = await fetch(`${g.state.afsHost}/auth/signup`, {
           method: "post",
           body
         });
@@ -38,7 +36,7 @@ class Register extends React.Component {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll(async (err, values) => {
       if (!err) {
-        const timestampRes = await fetch(`${host}/auth/time`);
+        const timestampRes = await fetch(`${g.state.afsHost}/auth/time`);
         const timestampJson = await timestampRes.json();
         const timestamp = timestampJson.CurrentTimeStamp;
         const body = new FormData();
@@ -49,7 +47,7 @@ class Register extends React.Component {
         body.append("timeStamp", timestamp);
         body.append("new_password", values.password);
         body.append("signature", signature);
-        const res = await fetch(`${host}/auth/changepassword`, {
+        const res = await fetch(`${g.state.afsHost}/auth/changepassword`, {
           method: "post",
           body
         });

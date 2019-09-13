@@ -14,10 +14,7 @@ import FaMenu from "react-icons/lib/md/more-vert";
 import { navigate } from "@reach/router";
 import { Generate_key } from "../../utils";
 import g from "../../state";
-const config = require('../../config.json')
 const CryptoJS = require("crypto-js");
-
-const host1 = config.bos;
 
 const convertFile = async file => {
   return new Promise((resolve, reject) => {
@@ -157,7 +154,7 @@ export default class extends Component {
     });
     body.append("message", content);
     // body.append("message", this.refs.input.state.value);
-    const res = await fetch(`${host1}/msg/upload`, {
+    const res = await fetch(`${g.state.afsHost}/msg/upload`, {
       method: "post",
       body
     });
@@ -232,7 +229,7 @@ export default class extends Component {
       for (const item of data) {
         if (item.type === "afid") {
           const res = await fetch(
-            `${host1}/msg/download?token=${token}&afid=${item.afid}`
+            `${g.state.afsHost}/msg/download?token=${token}&afid=${item.afid}`
           );
           const d = await res.json();
           const obj = JSON.parse(d.Message);
@@ -263,7 +260,7 @@ export default class extends Component {
           });
         } else if (item.type === "image") {
             const res = await fetch(
-                `${host1}/file/download?token=${token}&afid=${item.afid}`
+                `${g.state.afsHost}/file/download?token=${token}&afid=${item.afid}`
               );
               const data = await res.blob();
               console.log(data);
@@ -306,7 +303,7 @@ export default class extends Component {
 
       if (type === "afid") {
         const res = await fetch(
-          `${host1}/msg/download?token=${token}&afid=${afid}`
+          `${g.state.afsHost}/msg/download?token=${token}&afid=${afid}`
         );
         const d = await res.json();
         const isSuccess = d.SuccStatus > 0;
@@ -336,7 +333,7 @@ export default class extends Component {
         });
       } else if (type === "image") {
         const res = await fetch(
-          `${host1}/file/download?token=${token}&afid=${afid}`
+          `${g.state.afsHost}/file/download?token=${token}&afid=${afid}`
         );
         const data = await res.blob();
         console.log(data);
@@ -421,7 +418,7 @@ export default class extends Component {
     const body = new FormData();
     body.append("token", token);
     body.append("file", file);
-    const res = await fetch(`${host1}/file/upload`, { method: "post", body });
+    const res = await fetch(`${g.state.afsHost}/file/upload`, { method: "post", body });
     const data = await res.json();
     if (data.SuccStatus <= 0) return;
     console.log(data);
@@ -488,7 +485,7 @@ export default class extends Component {
 
     // get receiver's publicKey
     const resp = await fetch(
-      `${host1}/msg/download?token=${token}&afid=${pkAfid}`
+      `${g.state.afsHost}/msg/download?token=${token}&afid=${pkAfid}`
     );
     const d = await resp.json();
     const receiverPublicKey = d.Message;
@@ -496,7 +493,7 @@ export default class extends Component {
     let AESKEY = "";
     const tag = `${addr}-${receiver}`;
     let res = await fetch(
-      `${host1}/afid/getbytag?token=${token}&tag=ChainChat::AESKEY-${tag}`
+      `${g.state.afsHost}/afid/getbytag?token=${token}&tag=ChainChat::AESKEY-${tag}`
     );
     let data = await res.json();
     // if (data.SuccStatus <= 0) return;
@@ -509,7 +506,7 @@ export default class extends Component {
       let body = new FormData();
       body.append("token", token);
       body.append("message", encryptedContent);
-      res = await fetch(`${host1}/msg/upload`, {
+      res = await fetch(`${g.state.afsHost}/msg/upload`, {
         method: "post",
         body
       });
@@ -519,7 +516,7 @@ export default class extends Component {
       body = new FormData();
       body.append("token", token);
       body.append("afid", AESKEYAfid);
-      res = await fetch(`${host1}/afid/add`, {
+      res = await fetch(`${g.state.afsHost}/afid/add`, {
         method: "post",
         body
       });
@@ -530,7 +527,7 @@ export default class extends Component {
       body.append("token", token);
       body.append("tag", `ChainChat::AESKEY-${tag}`);
       body.append("afid", AESKEYAfid);
-      res = await fetch(`${host1}/afid/addtag`, {
+      res = await fetch(`${g.state.afsHost}/afid/addtag`, {
         method: "post",
         body
       });
@@ -538,7 +535,7 @@ export default class extends Component {
       if (data.SuccStatus <= 0) return;
     } else {
       const afid = data.Afids[0].Afid;
-      res = await fetch(`${host1}/msg/download?afid=${afid}&token=${token}`);
+      res = await fetch(`${g.state.afsHost}/msg/download?afid=${afid}&token=${token}`);
       data = await res.json();
       if (data.SuccStatus <= 0) return;
       let encrypt = new JsEncrypt();
