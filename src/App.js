@@ -79,7 +79,7 @@ function App() {
                       <span>Logout</span>
                     </Menu.Item>
                   )}
-                  <Menu.Item
+                  {/* <Menu.Item
                     key="5"
                     onClick={() => {
                       navigate("/search");
@@ -98,7 +98,7 @@ function App() {
                   >
                     <Icon type="pie-chart" />
                     <span>AFS Info</span>
-                  </Menu.Item>
+                  </Menu.Item> */}
                 </Menu>
               </Sider>
               <Layout>

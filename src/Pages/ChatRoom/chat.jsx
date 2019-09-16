@@ -35,9 +35,92 @@ export default class extends Component {
       ws: null,
       receiverPublicKey: "",
       AESKEY: "",
-      encryptedAESKEY: ""
+      encryptedAESKEY: "",
+      historyData: [],
+      loadEarly: false,
+      sending: false
     };
   }
+
+  loadHistory = async () => {
+    this.setState({ loadEarly: true });
+    const that = this;
+    const data = this.state.historyData;
+    const {
+      username,
+      token,
+      privateKey,
+      publicKey,
+      addr,
+      publicKeyAfid
+    } = this.props.userInfo;
+    const receiver = this.props.receiver;
+    const list = that.state.messageList;
+    for (const item of data) {
+      if (item.type === "afid") {
+        const res = await fetch(
+          `${g.state.afsHost}/msg/download?token=${token}&afid=${item.afid}`
+        );
+        const d = await res.json();
+        const obj = JSON.parse(d.Message);
+        let encrypt = new JsEncrypt();
+        encrypt.setPrivateKey(privateKey);
+        const ph = encrypt.decrypt(obj.ph) || this.state.AESKEY;
+        const mes = CryptoJS.AES.decrypt(obj.cipher, ph).toString(
+          CryptoJS.enc.Utf8
+        );
+        list.push({
+          position: item.sender === addr ? "right" : "left",
+          forwarded: true,
+          type: "text",
+          theme: "white",
+          view: "list",
+          title: item.sender,
+          titleColor: this.getRandomColor(),
+          text: mes,
+          onLoad: () => {
+            console.log("Photo loaded");
+          },
+          status: "read",
+          date: item.timestamp
+        });
+        this.setState({
+          messageList: list
+        });
+      } else if (item.type === "image") {
+        const res = await fetch(
+          `${g.state.afsHost}/file/download?token=${token}&afid=${item.afid}`
+        );
+        const data = await res.blob();
+        console.log(data);
+        const base64 = await convertFile(data);
+        console.log("=-=");
+        console.log(base64);
+        list.push({
+          position: item.sender === addr ? "right" : "left",
+          forwarded: true,
+          type: "photo",
+          theme: "white",
+          view: "list",
+          title: data.sender,
+          titleColor: this.getRandomColor(),
+          data: {
+            uri: base64,
+            width: 300,
+            height: 300
+          },
+          onLoad: () => {
+            console.log("Photo loaded");
+          },
+          status: "read",
+          date: item.timestamp
+        });
+        this.setState({
+          messageList: list
+        });
+      }
+    }
+  };
 
   async componentWillUnmount() {
     // setInterval(this.addMessage.bind(this), 3000);
@@ -133,6 +216,10 @@ export default class extends Component {
   };
 
   addMessage = async () => {
+    if (!this.refs.input.state.value) {
+      return;
+    }
+    this.setState({ sending: true });
     // send message to get afid
     const {
       username,
@@ -189,7 +276,8 @@ export default class extends Component {
     });
     this.setState(
       {
-        messageList: list
+        messageList: list,
+        sending: false
       },
       () => {
         this.refs.input.clear();
@@ -225,73 +313,7 @@ export default class extends Component {
       console.log("history");
       const data = JSON.parse(str);
       console.log(data);
-      const list = that.state.messageList;
-      for (const item of data) {
-        if (item.type === "afid") {
-          const res = await fetch(
-            `${g.state.afsHost}/msg/download?token=${token}&afid=${item.afid}`
-          );
-          const d = await res.json();
-          const obj = JSON.parse(d.Message);
-          let encrypt = new JsEncrypt();
-          encrypt.setPrivateKey(privateKey);
-          const ph = encrypt.decrypt(obj.ph) || this.state.AESKEY;
-          const mes = CryptoJS.AES.decrypt(obj.cipher, ph).toString(
-            CryptoJS.enc.Utf8
-          );
-          list.push({
-            position: item.sender === addr ? "right" : "left",
-            forwarded: true,
-            type: "text",
-            theme: "white",
-            view: "list",
-            title: item.sender,
-            titleColor: this.getRandomColor(),
-            text: mes,
-            onLoad: () => {
-              console.log("Photo loaded");
-            },
-            status: "read",
-            date: item.timestamp
-          });
-          this.setState({
-            ws,
-            messageList: list
-          });
-        } else if (item.type === "image") {
-            const res = await fetch(
-                `${g.state.afsHost}/file/download?token=${token}&afid=${item.afid}`
-              );
-              const data = await res.blob();
-              console.log(data);
-              const base64 = await convertFile(data);
-              console.log("=-=");
-              console.log(base64);
-              list.push({
-                position: item.sender===addr? "right":"left",
-                forwarded: true,
-                type: "photo",
-                theme: "white",
-                view: "list",
-                title: data.sender,
-                titleColor: this.getRandomColor(),
-                data: {
-                  uri: base64,
-                  width: 300,
-                  height: 300
-                },
-                onLoad: () => {
-                  console.log("Photo loaded");
-                },
-                status: "read",
-                date: item.timestamp
-              });
-              this.setState({
-                ws,
-                messageList: list
-              });
-        }
-      }
+      this.setState({ historyData: data });
     });
 
     ws.on("res", async str => {
@@ -418,7 +440,10 @@ export default class extends Component {
     const body = new FormData();
     body.append("token", token);
     body.append("file", file);
-    const res = await fetch(`${g.state.afsHost}/file/upload`, { method: "post", body });
+    const res = await fetch(`${g.state.afsHost}/file/upload`, {
+      method: "post",
+      body
+    });
     const data = await res.json();
     if (data.SuccStatus <= 0) return;
     console.log(data);
@@ -535,7 +560,9 @@ export default class extends Component {
       if (data.SuccStatus <= 0) return;
     } else {
       const afid = data.Afids[0].Afid;
-      res = await fetch(`${g.state.afsHost}/msg/download?afid=${afid}&token=${token}`);
+      res = await fetch(
+        `${g.state.afsHost}/msg/download?afid=${afid}&token=${token}`
+      );
       data = await res.json();
       if (data.SuccStatus <= 0) return;
       let encrypt = new JsEncrypt();
@@ -565,6 +592,12 @@ export default class extends Component {
         <div style={{}}>
           Status: {this.state.ws ? "Connected" : "Disconnected"}
         </div>
+        <Button
+          disabled={this.state.loadEarly}
+          onClick={() => this.loadHistory()}
+        >
+          Load History
+        </Button>
 
         <div className="container">
           <List
@@ -621,7 +654,7 @@ export default class extends Component {
             }}
             rightButtons={
               <Button
-                disabled={!Boolean(this.state.ws)}
+                disabled={!Boolean(this.state.ws) || this.state.sending}
                 type="primary"
                 onClick={this.addMessage.bind(this)}
               >
